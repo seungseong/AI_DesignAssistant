@@ -6,7 +6,6 @@ import { crawlShopItems, type ShopItem } from '@/utils/scrapingApi'
 import Image from 'next/image'
 
 type ItemType = 'logo' | '상의>반소매 티셔츠' | '상의>후드 티셔츠' | '상의>맨투맨/스웨트셔츠' | '상의>니트/스웨터' | 'mug' | 'backpack' | 'cap' | 'shoes' | 'custom'
-type ShopType = 'musinsa' | 'naver' | 'ably'
 
 // Define favorite item type
 interface FavoriteItem {
@@ -100,34 +99,6 @@ export default function Home() {
   // 오류 메시지 상태 추가
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  // 쇼핑몰 상품 데이터 (실제로는 API에서 가져올 수 있음)
-  const shopItemsData = {
-    musinsa: [
-      { id: 'm1', image: 'https://via.placeholder.com/150?text=무신사1', title: '무신사 상품 1', price: '39,000원' },
-      { id: 'm2', image: 'https://via.placeholder.com/150?text=무신사2', title: '무신사 상품 2', price: '45,000원' },
-      { id: 'm3', image: 'https://via.placeholder.com/150?text=무신사3', title: '무신사 상품 3', price: '29,000원' },
-    ],
-    naver: [
-      { id: 'n1', image: 'https://via.placeholder.com/150?text=네이버1', title: '네이버 상품 1', price: '32,000원' },
-      { id: 'n2', image: 'https://via.placeholder.com/150?text=네이버2', title: '네이버 상품 2', price: '28,000원' },
-      { id: 'n3', image: 'https://via.placeholder.com/150?text=네이버3', title: '네이버 상품 3', price: '35,000원' },
-    ],
-    ably: [
-      { id: 'a1', image: 'https://via.placeholder.com/150?text=에이블리1', title: '에이블리 상품 1', price: '25,000원' },
-      { id: 'a2', image: 'https://via.placeholder.com/150?text=에이블리2', title: '에이블리 상품 2', price: '19,900원' },
-      { id: 'a3', image: 'https://via.placeholder.com/150?text=에이블리3', title: '에이블리 상품 3', price: '22,000원' },
-    ]
-  }
-
-  const itemTypes = [
-    { value: 'logo', label: '로고' },
-    { value: '상의>반소매 티셔츠', label: '반소매 티셔츠' },
-    { value: '상의>후드 티셔츠', label: '후드 티셔츠' },
-    { value: '상의>맨투맨/스웨트셔츠', label: '맨투맨/스웨트셔츠' },
-    { value: '상의>니트/스웨터', label: '니트/스웨터' },
-    { value: 'custom', label: '직접 입력' },
-  ]
-
   // 모든 상태를 초기화하는 함수
   const resetAll = () => {
     setCharacter('')
@@ -194,6 +165,7 @@ export default function Home() {
           // 여전히 실패하면 모든 히스토리 삭제
           localStorage.removeItem('designHistory');
           setHistoryItems([]);
+          console.error('Storage error:', e);
         }
       } else {
         console.error('Storage error:', e);
