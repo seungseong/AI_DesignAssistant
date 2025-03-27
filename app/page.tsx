@@ -154,8 +154,8 @@ export default function Home() {
       // 히스토리가 10개를 초과하면 가장 오래된 항목들을 제거
       const limitedHistory = historyItems.slice(-10);
       localStorage.setItem('designHistory', JSON.stringify(limitedHistory));
-    } catch (e: any) {
-      if (e.name === 'QuotaExceededError') {
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === 'QuotaExceededError') {
         // 스토리지가 가득 찼을 경우, 더 오래된 항목들을 제거
         const reducedHistory = historyItems.slice(-5); // 최근 5개만 유지
         try {
@@ -165,7 +165,7 @@ export default function Home() {
           // 여전히 실패하면 모든 히스토리 삭제
           localStorage.removeItem('designHistory');
           setHistoryItems([]);
-          console.error('Storage error:', e);
+          console.error('Storage error:', e, retryError);
         }
       } else {
         console.error('Storage error:', e);
@@ -337,13 +337,14 @@ export default function Home() {
             }
             return updatedHistory;
           });
-        } catch (geminiError: any) {
+        } catch (geminiError: unknown) {
           console.error('Gemini API error:', geminiError);
           
           // 오류 메시지 표시
-          if (geminiError.message?.includes('safety') || 
-              geminiError.message?.includes('Safety system') ||
-              geminiError.message?.includes('policy')) {
+          const errorMessage = geminiError instanceof Error ? geminiError.message : String(geminiError);
+          if (errorMessage.includes('safety') || 
+              errorMessage.includes('Safety system') ||
+              errorMessage.includes('policy')) {
             console.log('Gemini safety policy violation');
             // 오류 메시지 설정
             setErrorMessage('Gemini: 입력된 설명에 안전 정책을 위반하는 내용이 포함되어 있습니다.');
@@ -356,11 +357,11 @@ export default function Home() {
           // 플레이스홀더 이미지 URL 설정
           setGeminiImageUrl('https://placehold.co/1024x1024/f5f5f5/cccccc?text=Gemini+Image+Not+Available');
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('General error:', error);
         setErrorMessage('처리 중 오류가 발생했습니다: ' + (error instanceof Error ? error.message : String(error)));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('General error:', error);
       setErrorMessage('처리 중 오류가 발생했습니다: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
