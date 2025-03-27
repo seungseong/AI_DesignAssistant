@@ -160,9 +160,14 @@ export default function Home() {
     const savedHistory = localStorage.getItem('designHistory')
     if (savedHistory) {
       try {
-        setHistoryItems(JSON.parse(savedHistory))
+        const parsedHistory = JSON.parse(savedHistory);
+        // 로드 시에도 10개로 제한
+        setHistoryItems(parsedHistory.slice(-10));
       } catch (e) {
         console.error('Error loading history:', e)
+        // 에러 발생 시 히스토리 초기화
+        localStorage.removeItem('designHistory');
+        setHistoryItems([]);
       }
     }
   }, [])
@@ -174,8 +179,27 @@ export default function Home() {
   
   // Save history to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('designHistory', JSON.stringify(historyItems))
-  }, [historyItems])
+    try {
+      // 히스토리가 10개를 초과하면 가장 오래된 항목들을 제거
+      const limitedHistory = historyItems.slice(-10);
+      localStorage.setItem('designHistory', JSON.stringify(limitedHistory));
+    } catch (e: any) {
+      if (e.name === 'QuotaExceededError') {
+        // 스토리지가 가득 찼을 경우, 더 오래된 항목들을 제거
+        const reducedHistory = historyItems.slice(-5); // 최근 5개만 유지
+        try {
+          localStorage.setItem('designHistory', JSON.stringify(reducedHistory));
+          setHistoryItems(reducedHistory); // 상태도 업데이트
+        } catch (retryError) {
+          // 여전히 실패하면 모든 히스토리 삭제
+          localStorage.removeItem('designHistory');
+          setHistoryItems([]);
+        }
+      } else {
+        console.error('Storage error:', e);
+      }
+    }
+  }, [historyItems]);
 
   // Function to add current design to favorites
   const addToFavorites = () => {
