@@ -246,12 +246,12 @@ export async function GET(request: Request) {
         
         // 항상 3개의 아이템을 유지하기 위해 필요시 더미 데이터로 채움
         if (items.length === 0) {
-          const dummyItems = getDummyItems(categoryCode);
+          const dummyItems = getDummyItems();
           await browser.close();
           return NextResponse.json(dummyItems);
         } else if (items.length < 3) {
           // 추출된 항목이 3개 미만이면 부족한 만큼 더미로 채움
-          const dummyItems = getDummyItems(categoryCode);
+          const dummyItems = getDummyItems();
           while (items.length < 3) {
             const dummyIndex: number = items.length;
             if (dummyItems[dummyIndex]) {
@@ -366,7 +366,7 @@ export async function GET(request: Request) {
     console.error('Error scraping Musinsa:', error);
     
     // 더미 데이터 반환
-    const dummyItems = getDummyItems(categoryCode as string);
+    const dummyItems = getDummyItems();
     
     return NextResponse.json(dummyItems);
   }
@@ -429,7 +429,7 @@ function getCategoryCode(categoryStr: string): string {
 }
 
 // 카테고리별 더미 데이터 반환
-function getDummyItems(categoryCode: string): ShopItem[] {
+function getDummyItems(): ShopItem[] {
   // 카테고리와 관계없이 빈 이미지를 표시하는 데이터 반환
   return [
     {

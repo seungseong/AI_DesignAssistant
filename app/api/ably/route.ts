@@ -283,10 +283,10 @@ export async function GET(request: Request) {
     
     // 상품을 찾지 못했다면 더미 데이터 사용
     if (items.length === 0) {
-      items = getDummyItems(keyword || '', category_sno, sub_category_sno);
+      items = getDummyItems();
     } else if (items.length < 3) {
       // 3개 미만이면 더미 데이터로 채움
-      const dummyItems = getDummyItems(keyword || '', category_sno, sub_category_sno);
+      const dummyItems = getDummyItems();
       while (items.length < 3) {
         const dummyIndex = items.length;
         if (dummyItems[dummyIndex]) {
@@ -307,50 +307,13 @@ export async function GET(request: Request) {
     console.error('Error scraping Ably:', error);
     
     // 더미 데이터 반환
-    const dummyItems = getDummyItems(keyword || '', category_sno, sub_category_sno);
+    const dummyItems = getDummyItems();
     return NextResponse.json(dummyItems);
   }
 }
-/*
-// 카테고리 코드에 해당하는 카테고리명 반환
-function getCategoryName(category_sno: string, sub_category_sno?: string): string {
-  const catSno = Number(category_sno);
-  const subCatSno = Number(sub_category_sno || '0');
-  
-  // 전체 카테고리
-  if (catSno === 0) return '전체';
-  
-  // 메인 카테고리 찾기
-  for (const [mainName, mainCategory] of Object.entries(ABLY_CATEGORIES)) {
-    if (mainName === '전체') continue;
-    
-    if (typeof mainCategory === 'object' && 'category_sno' in mainCategory && mainCategory.category_sno === catSno) {
-      // 서브카테고리가 없거나 0이면 메인 카테고리만 반환
-      if (!subCatSno || subCatSno === 0) return mainName;
-      
-      // 서브카테고리 찾기
-      if ('subcategories' in mainCategory && mainCategory.subcategories) {
-        for (const [subName, subCategory] of Object.entries(mainCategory.subcategories)) {
-          if (typeof subCategory === 'object' && 
-              'category_sno' in subCategory && 
-              'sub_category_sno' in subCategory &&
-              subCategory.category_sno === catSno && 
-              subCategory.sub_category_sno === subCatSno) {
-            return `${mainName} > ${subName}`;
-          }
-        }
-      }
-      
-      // 서브카테고리를 찾지 못했으면 메인 카테고리만 반환
-      return mainName;
-    }
-  }
-  
-  return '알 수 없음';
-}
-*/
+
 // 더미 데이터 반환 함수
-function getDummyItems(keyword: string, category_sno: string, sub_category_sno?: string): ShopItem[] {
+function getDummyItems(): ShopItem[] {
   // 카테고리와 관계없이 빈 이미지를 표시하는 데이터 반환
   return [
     {
