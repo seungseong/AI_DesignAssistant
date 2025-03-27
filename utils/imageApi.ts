@@ -102,17 +102,7 @@ function formatErrorMessage(error: any): string {
     }
     return error.message;
   }
-  
-  // Axios 에러
-  if (error.response) {
-    const status = error.response.status;
-    if (status === 429) return '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
-    if (status === 401) return '인증에 실패했습니다. API 키를 확인해주세요.';
-    if (status === 403) return '접근이 거부되었습니다.';
-    if (status >= 500) return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-    return `오류가 발생했습니다. (${status})`;
-  }
-  
+
   return '알 수 없는 오류가 발생했습니다.';
 }
 
@@ -147,18 +137,18 @@ export async function analyzeCharacter(character: string, snsLink?: string): Pro
 
 // 공통 프롬프트 포맷 함수 추가
 function formatProductPrompt(itemType: string, specificPrompt: string): string {
-  return `Create a professional product photo featuring only the ${itemType}. ${specificPrompt} This must be ${itemType === 'logo' ? 'a' : 'the'} ${itemType}, not any other ${itemType === 'logo' ? 'design' : 'item'}.`;
+  return `Create a professional product image featuring only the ${itemType}, with a clean white or light gray background. ${specificPrompt} This must be ${itemType === 'logo' ? 'a' : 'the'} ${itemType}, not any other ${itemType === 'logo' ? 'design' : 'item'}. Do not include any human models or mannequins.`;
 }
 
 function getItemPrompt(itemType: string): string {
   const itemPrompts: { [key: string]: string } = {
     'logo': 'Create a modern and minimalist logo design.',
-    't-shirt': 'Design with the pattern centered on the front. Show a short sleeve t-shirt.',
-    'tshirt': 'Design with the pattern centered on the front. Show a short sleeve t-shirt.',
-    '티셔츠': 'Design with the pattern centered on the front. Show a short sleeve t-shirt.',
-    'hoodie': 'Design with the pattern centered on the front. Show a hoodie sweatshirt with a hood.',
-    '후드티': 'Design with the pattern centered on the front. Show a hoodie sweatshirt with a hood.',
-    '후드': 'Design with the pattern centered on the front. Show a hoodie sweatshirt with a hood.',
+    't-shirt': 'Show a single front view of the t-shirt, laid flat with the design centered.',
+    'tshirt': 'Show a single front view of the t-shirt, laid flat with the design centered.',
+    '티셔츠': 'Show a single front view of the t-shirt, laid flat with the design centered.',
+    'hoodie': 'Show a single front view of the hoodie, laid flat with the design centered.',
+    '후드티': 'Show a single front view of the hoodie, laid flat with the design centered.',
+    '후드': 'Show a single front view of the hoodie, laid flat with the design centered.',
     'mug': 'Design with the pattern wrapped around. Show a coffee/tea mug.',
     '머그컵': 'Design with the pattern wrapped around. Show a coffee/tea mug.',
     '컵': 'Design with the pattern wrapped around. Show a coffee/tea mug.',
@@ -183,7 +173,7 @@ function getItemPrompt(itemType: string): string {
   }
   
   // 기본 프롬프트
-  return formatProductPrompt(itemType, `Design focusing on clear product visualization.`);
+  return formatProductPrompt(itemType, `Show a single front view of the item, laid flat with the design clearly visible.`);
 }
 
 // 공통 프롬프트 생성 함수
@@ -192,7 +182,7 @@ export function createImagePrompt(analysis: string, itemType: string): string {
   const itemPrompt = getItemPrompt(itemType);
   
   // 명확하고 안전한 프롬프트로 구성
-  return `${itemPrompt} inspired by these style elements: ${analysis}. Create a professional product photo of the ${itemType}. The design should be neat and commercially suitable, with a front view image`;
+  return `${itemPrompt} inspired by these style elements: ${analysis}. Create a professional product photo with a clean white or light gray background. The design should be neat and commercially suitable. Do not include any human models, mannequins, or additional props.`;
 }
 
 // DALL-E 이미지 생성 함수

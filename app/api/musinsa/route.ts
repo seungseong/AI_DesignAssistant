@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
 import * as cheerio from 'cheerio';
 import puppeteer from 'puppeteer';
 
@@ -118,14 +117,12 @@ const CATEGORIES = [
 ];
 
 export async function GET(request: Request) {
-  console.log('musinsa 크롤링 시작');
   const { searchParams } = new URL(request.url);
   const keyword = searchParams.get('keyword');
   const category = searchParams.get('category') || '전체'; // 기본값: 전체
   
   // 카테고리 코드 가져오기 (문자열 카테고리로부터)
   const categoryCode = getCategoryCode(category);
-  console.log(`카테고리 "${category}" → 코드 "${categoryCode}"`);
 
   if (!keyword && !category) {
     return NextResponse.json({ error: 'Keyword or category is required' }, { status: 400 });
@@ -136,8 +133,6 @@ export async function GET(request: Request) {
     if (categoryCode) {
       const sectionId = '199';
       const rankingUrl = `https://www.musinsa.com/main/musinsa/ranking?storeCode=musinsa&sectionId=${sectionId}&categoryCode=${categoryCode}&contentsId=`;
-      
-      console.log('Requesting URL:', rankingUrl);
       
       // Puppeteer를 사용하여 동적 페이지 로딩
       const browser = await puppeteer.launch({
@@ -159,22 +154,16 @@ export async function GET(request: Request) {
         const $ = cheerio.load(content);
         const items: ShopItem[] = [];
         
-        console.log('HTML 콘텐츠 로드 완료, 상품 정보 추출 시작');
-        
         // 제공된 HTML 구조에 맞게 상품 추출
         // 1. 랭킹 컨테이너 찾기 (.sc-1y072n9-0.jdzDMq)
         const rankingContainers = $('.sc-1y072n9-0.jdzDMq');
         
-        if (rankingContainers.length > 0) {
-          console.log(`랭킹 컨테이너 ${rankingContainers.length}개 발견`);
-          
+        if (rankingContainers.length > 0) {          
           // 첫 번째 컨테이너에서 상품 아이템 찾기 (1,2,3위 포함)
           const firstContainer = rankingContainers.first();
           
           // 상품 아이템 찾기 (.sc-1m4cyao-0.dQNLfk)
           const productItems = firstContainer.find('.sc-1m4cyao-0.dQNLfk').slice(0, 3);
-          
-          console.log(`상품 아이템 ${productItems.length}개 발견`);
           
           productItems.each((i, el) => {
             const rank = i + 1; // 1, 2, 3위
@@ -245,22 +234,17 @@ export async function GET(request: Request) {
               price: price || '가격정보 없음',
               url: link.startsWith('http') ? link : `https://www.musinsa.com${link}`,
               brand: brand || '브랜드 정보 없음',
-              category: getCategoryName(categoryCode)
             };
             
-            console.log(`${rank}위 상품 추출:`, { title: item.title, brand: item.brand });
             items.push(item);
           });
         } else {
-          console.log('랭킹 컨테이너를 찾을 수 없음. HTML 구조 디버깅:');
           // HTML 구조 디버깅을 위한 기본 요소들 출력
           const bodyHtml = $('body').html()?.substring(0, 500) || '';
-          console.log('Body HTML 미리보기:', bodyHtml);
         }
         
         // 항상 3개의 아이템을 유지하기 위해 필요시 더미 데이터로 채움
         if (items.length === 0) {
-          console.log('상품을 찾지 못함, 더미 데이터 사용');
           const dummyItems = getDummyItems(categoryCode);
           await browser.close();
           return NextResponse.json(dummyItems);
@@ -356,7 +340,6 @@ export async function GET(request: Request) {
             brand: brandEl.text().trim() || '브랜드 정보 없음',
           };
           
-          console.log('키워드 검색 상품:', { title: item.title });
           items.push(item);
         });
         
@@ -382,7 +365,6 @@ export async function GET(request: Request) {
     console.error('Error scraping Musinsa:', error);
     
     // 더미 데이터 반환
-    const categoryName = getCategoryName(categoryCode as string);
     const dummyItems = getDummyItems(categoryCode as string);
     
     return NextResponse.json(dummyItems);
@@ -443,31 +425,6 @@ function getCategoryCode(categoryStr: string): string {
   // 카테고리를 찾지 못한 경우 기본값 반환
   console.log(`카테고리를 찾을 수 없음: ${categoryStr}, 기본값 반환`);
   return '000';
-}
-
-// 카테고리 코드에 해당하는 카테고리명 반환
-function getCategoryName(categoryCode: string): string {
-  if (categoryCode === '000') return '전체';
-  
-  // 상품 대분류 확인
-  for (const [mainName, mainCategory] of Object.entries(MUSINSA_CATEGORIES)) {
-    if (mainName === '전체') continue;
-    
-    if (typeof mainCategory === 'object' && mainCategory.code === categoryCode) {
-      return mainName;
-    }
-    
-    // 상품 소분류 확인
-    if (typeof mainCategory === 'object' && mainCategory.subcategories) {
-      for (const [subName, subCode] of Object.entries(mainCategory.subcategories)) {
-        if (subCode === categoryCode) {
-          return `${mainName} > ${subName}`;
-        }
-      }
-    }
-  }
-  
-  return '알 수 없음';
 }
 
 // 카테고리별 더미 데이터 반환
