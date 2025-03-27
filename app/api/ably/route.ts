@@ -351,133 +351,36 @@ function getCategoryName(category_sno: string, sub_category_sno?: string): strin
 */
 // 더미 데이터 반환 함수
 function getDummyItems(keyword: string, category_sno: string, sub_category_sno?: string): ShopItem[] {
-  
-  // 카테고리별 더미 데이터
-  if (category_sno === '8' && sub_category_sno === '500') {
-    // 후드티
-    return [
-      {
-        id: 'ably-1',
-        rank: 1,
-        image: 'https://image.a-bly.com/data/dailyabout/goods/6050231/vNl4GVMvCm.jpg',
-        title: '오버핏 무지 후드티',
-        price: '32,000원',
-        url: 'https://www.a-bly.com/goods/6050231',
-        brand: '스윗블랭크',
-      },
-      {
-        id: 'ably-2',
-        rank: 2,
-        image: 'https://image.a-bly.com/data/dailyabout/goods/6050232/vNl4GVMvCm.jpg',
-        title: '프렌치 크롭 후드집업',
-        price: '42,800원',
-        url: 'https://www.a-bly.com/goods/6050232',
-        brand: '럽유',
-      },
-      {
-        id: 'ably-3',
-        rank: 3,
-        image: 'https://image.a-bly.com/data/dailyabout/goods/6050233/vNl4GVMvCm.jpg',
-        title: '캐주얼 후드 원피스',
-        price: '39,800원',
-        url: 'https://www.a-bly.com/goods/6050233',
-        brand: '위미드',
-      }
-    ];
-  } else if (category_sno === '8' && sub_category_sno === '18') {
-    // 반소매 티셔츠
-    return [
-      {
-        id: 'ably-1',
-        rank: 1,
-        image: 'https://cf.product-image.s.zigzag.kr/images/2024032100/1009452647/1_960_1_9.jpg',
-        title: '여름 베이직 크롭티',
-        price: '15,800원',
-        url: 'https://zigzag.kr/catalog/products/119618161',
-        brand: '데일리어바웃',
-      },
-      {
-        id: 'ably-2',
-        rank: 2,
-        image: 'https://cf.product-image.s.zigzag.kr/images/2023051901/1000000002/1_960_1_9.jpg',
-        title: '스트라이프 반팔 티셔츠',
-        price: '19,800원',
-        url: 'https://zigzag.kr/catalog/products/103099602',
-        brand: '베이직트렌드',
-      },
-      {
-        id: 'ably-3',
-        rank: 3,
-        image: 'https://cf.product-image.s.zigzag.kr/images/2023033101/1003580864/1_960_1_9.jpg',
-        title: '여성용 프린팅 티셔츠',
-        price: '22,000원',
-        url: 'https://zigzag.kr/catalog/products/100998642',
-        brand: '러블리걸',
-      }
-    ];
-  } else if (category_sno === '8' && sub_category_sno === '300') {
-    // 맨투맨
-    return [
-      {
-        id: 'ably-1',
-        rank: 1,
-        image: 'https://image.a-bly.com/data/dailyabout/goods/7050232/vNl4GVMvCm.jpg',
-        title: '미니멀 로고 맨투맨',
-        price: '36,000원',
-        url: 'https://www.a-bly.com/goods/7050232',
-        brand: '모던어반',
-      },
-      {
-        id: 'ably-2',
-        rank: 2,
-        image: 'https://cf.product-image.s.zigzag.kr/images/2022091501/1003689754/1_960_1_9.jpg',
-        title: '오버핏 기모 맨투맨',
-        price: '28,900원',
-        url: 'https://zigzag.kr/catalog/products/98765432',
-        brand: '코디스토리',
-      },
-      {
-        id: 'ably-3',
-        rank: 3,
-        image: 'https://cf.product-image.s.zigzag.kr/images/2022102201/1005689754/1_960_1_9.jpg',
-        title: '컬러 블럭 맨투맨',
-        price: '32,800원',
-        url: 'https://zigzag.kr/catalog/products/87654321',
-        brand: '트렌디룩',
-      }
-    ];
-  } else {
-    // 기본 상품
-    return [
-      {
-        id: 'ably-1',
-        rank: 1,
-        image: 'https://cf.product-image.s.zigzag.kr/images/2024032100/1009452647/1_960_1_9.jpg',
-        title: '[여리찰량] 사계절 레이어드 셔링 프릴 민소매 원피스 이너 나시 3color',
-        price: '15,800원',
-        url: 'https://zigzag.kr/catalog/products/119618161',
-        brand: '히릿',
-      },
-      {
-        id: 'ably-2',
-        rank: 2,
-        image: 'https://image.a-bly.com/data/dailyabout/goods/6050232/vNl4GVMvCm.jpg',
-        title: '프렌치 크롭 후드집업',
-        price: '42,800원',
-        url: 'https://www.a-bly.com/goods/6050232',
-        brand: '럽유',
-      },
-      {
-        id: 'ably-3',
-        rank: 3,
-        image: 'https://cf.product-image.s.zigzag.kr/images/2022102201/1005689754/1_960_1_9.jpg',
-        title: '컬러 블럭 맨투맨',
-        price: '32,800원',
-        url: 'https://zigzag.kr/catalog/products/87654321',
-        brand: '트렌디룩',
-      }
-    ];
-  }
+  // 카테고리와 관계없이 빈 이미지를 표시하는 데이터 반환
+  return [
+    {
+      id: 'ably-1',
+      rank: 1,
+      image: 'https://image.a-bly.com/images/no_image.jpg',
+      title: '상품 정보가 없습니다',
+      price: '',
+      url: 'https://www.a-bly.com',
+      brand: '',
+    },
+    {
+      id: 'ably-2',
+      rank: 2,
+      image: 'https://image.a-bly.com/images/no_image.jpg',
+      title: '상품 정보가 없습니다',
+      price: '',
+      url: 'https://www.a-bly.com',
+      brand: '',
+    },
+    {
+      id: 'ably-3',
+      rank: 3,
+      image: 'https://image.a-bly.com/images/no_image.jpg',
+      title: '상품 정보가 없습니다',
+      price: '',
+      url: 'https://www.a-bly.com',
+      brand: '',
+    }
+  ];
 }
 
 // 문자열 카테고리를 에이블리 카테고리 옵션으로 변환

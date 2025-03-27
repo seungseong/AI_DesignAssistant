@@ -171,7 +171,7 @@ export async function GET(request: Request) {
             // 상품 링크 요소 찾기 (div.sc-1m4cyao-1.dYjLwF > a)
             const linkContainer = $(el).find('.sc-1m4cyao-1.dYjLwF');
             const linkEl = linkContainer.find('a');
-            let link = linkEl.attr('href') || '';
+            const link = linkEl.attr('href') || '';
             
             // 상품 ID 추출 (URL에서)
             const itemId = link.split('/').pop() || '';
@@ -241,6 +241,7 @@ export async function GET(request: Request) {
         } else {
           // HTML 구조 디버깅을 위한 기본 요소들 출력
           const bodyHtml = $('body').html()?.substring(0, 500) || '';
+          console.log('HTML 구조 디버깅:', bodyHtml);
         }
         
         // 항상 3개의 아이템을 유지하기 위해 필요시 더미 데이터로 채움
@@ -428,112 +429,38 @@ function getCategoryCode(categoryStr: string): string {
 }
 
 // 카테고리별 더미 데이터 반환
-function getDummyItems(categoryCode: string): any[] {
-  // 후드 티셔츠 (001004)
-  if (categoryCode === '001004') {
-    return [
-      {
-        id: 'musinsa-1',
-        rank: 1,
-        image: 'https://image.msscdn.net/images/goods_img/20181017/881153/881153_1_500.jpg',
-        title: '[패키지] 2 TONE ARCH HOODIE 후드 스웨트셔츠',
-        price: '59,000원',
-        url: 'https://www.musinsa.com/app/goods/881153',
-        brand: '커버낫',
-        category: '상의 > 후드 티셔츠'
-      },
-      {
-        id: 'musinsa-2',
-        rank: 2,
-        image: 'https://image.msscdn.net/images/goods_img/20160921/417063/417063_16782642876271_500.jpg',
-        title: 'Small Arch Logo Hoodie Grey',
-        price: '89,000원',
-        url: 'https://www.musinsa.com/app/goods/417063',
-        brand: '챔피온',
-        category: '상의 > 후드 티셔츠'
-      },
-      {
-        id: 'musinsa-3',
-        rank: 3,
-        image: 'https://image.msscdn.net/images/goods_img/20190823/1143384/1143384_16789888319211_500.jpg',
-        title: '남여공용 무지 후드 GRAY',
-        price: '49,900원',
-        url: 'https://www.musinsa.com/app/goods/1143384',
-        brand: '프랩',
-        category: '상의 > 후드 티셔츠'
-      }
-    ];
-  }
-  
-  // 반소매 티셔츠 (001001)
-  else if (categoryCode === '001001') {
-    return [
-      {
-        id: 'musinsa-1',
-        rank: 1,
-        image: 'https://image.msscdn.net/images/goods_img/20200618/1492714/1492714_16846129106363_500.jpg',
-        title: '라운드 반팔 티셔츠 화이트',
-        price: '19,800원',
-        url: 'https://www.musinsa.com/app/goods/1492714',
-        brand: '무신사 스탠다드',
-        category: '상의 > 반소매 티셔츠'
-      },
-      {
-        id: 'musinsa-2',
-        rank: 2,
-        image: 'https://image.msscdn.net/images/goods_img/20230404/3188903/3188903_16859031499195_500.jpg',
-        title: '코튼 피케 오버핏 반팔 카라티 [블랙]',
-        price: '33,000원',
-        url: 'https://www.musinsa.com/app/goods/3188903',
-        brand: '무신사 스탠다드',
-        category: '상의 > 반소매 티셔츠'
-      },
-      {
-        id: 'musinsa-3',
-        rank: 3,
-        image: 'https://image.msscdn.net/images/goods_img/20210204/1778404/1778404_16789722529683_500.jpg',
-        title: '릴렉스 핏 크루넥 반팔 티셔츠',
-        price: '16,900원',
-        url: 'https://www.musinsa.com/app/goods/1778404',
-        brand: '마크곤잘레스',
-        category: '상의 > 반소매 티셔츠'
-      }
-    ];
-  }
-  
-  // 기본 전체 상품 (000)
-  else {
-    return [
-      {
-        id: 'musinsa-1',
-        rank: 1,
-        image: 'https://image.msscdn.net/images/goods_img/20200618/1492714/1492714_16846129106363_500.jpg',
-        title: '라운드 반팔 티셔츠 화이트',
-        price: '19,800원',
-        url: 'https://www.musinsa.com/app/goods/1492714',
-        brand: '무신사 스탠다드',
-        category: '상의 > 반소매 티셔츠'
-      },
-      {
-        id: 'musinsa-2',
-        rank: 2,
-        image: 'https://image.msscdn.net/images/goods_img/20200731/1527178/1527178_1_500.jpg',
-        title: '릴렉스드 베이식 데님 팬츠 [진청]',
-        price: '43,900원',
-        url: 'https://www.musinsa.com/app/goods/1527178',
-        brand: '무신사 스탠다드',
-        category: '바지 > 데님 팬츠'
-      },
-      {
-        id: 'musinsa-3',
-        rank: 3,
-        image: 'https://image.msscdn.net/images/goods_img/20200422/1430300/1430300_8_500.jpg',
-        title: '캔버스 스니커즈 [화이트]',
-        price: '39,900원',
-        url: 'https://www.musinsa.com/app/goods/1430300',
-        brand: '컨버스',
-        category: '신발 > 스니커즈'
-      }
-    ];
-  }
+function getDummyItems(categoryCode: string): ShopItem[] {
+  // 카테고리와 관계없이 빈 이미지를 표시하는 데이터 반환
+  return [
+    {
+      id: 'musinsa-1',
+      rank: 1,
+      image: 'https://image.msscdn.net/images/no_image_125.png',
+      title: '상품 정보가 없습니다',
+      price: '',
+      url: 'https://www.musinsa.com',
+      brand: '',
+      category: ''
+    },
+    {
+      id: 'musinsa-2',
+      rank: 2,
+      image: 'https://image.msscdn.net/images/no_image_125.png',
+      title: '상품 정보가 없습니다',
+      price: '',
+      url: 'https://www.musinsa.com',
+      brand: '',
+      category: ''
+    },
+    {
+      id: 'musinsa-3',
+      rank: 3,
+      image: 'https://image.msscdn.net/images/no_image_125.png',
+      title: '상품 정보가 없습니다',
+      price: '',
+      url: 'https://www.musinsa.com',
+      brand: '',
+      category: ''
+    }
+  ];
 } 
