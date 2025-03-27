@@ -123,7 +123,7 @@ export async function analyzeCharacter(character: string, snsLink?: string): Pro
           },
           {
             role: "user",
-            content: `Analyze the following individuals to omit descriptions of the characters and provide fashion item designs that fit your personality. Include specific details about the color, pattern, and style elements that reflect your personality. Do not specify items at this time: ${prompt}`
+            content: ` 'Analyze the following person and provide a design for a fashion item that fits their personality, omitting any description of the character. Include specific details about colors, patterns, and style elements that reflect their personality. Do not specify specific items. Do not include sensitive, political, sexually explicit, or violent content to avoid rejection by the safety system.: ${prompt}`
           }
         ],
       }));
