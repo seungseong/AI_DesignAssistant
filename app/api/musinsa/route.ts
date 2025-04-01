@@ -134,8 +134,10 @@ export async function GET(request: Request) {
   try {
     // 카테고리 코드가 있으면 카테고리별 랭킹 페이지에서 상품 가져오기
     if (categoryCode) {
+      const musinsaLink = 'https://www.musinsa.com';
+      const musinsaRankingLink = `${musinsaLink}/main/musinsa/ranking?storeCode=musinsa`;
       const sectionId = '199';
-      const rankingUrl = `https://www.musinsa.com/main/musinsa/ranking?storeCode=musinsa&sectionId=${sectionId}&categoryCode=${categoryCode}&contentsId=`;
+      const rankingUrl = `${musinsaRankingLink}&sectionId=${sectionId}&categoryCode=${categoryCode}&contentsId=`;
       
       // Puppeteer를 사용하여 동적 페이지 로딩
       const browser = await puppeteer.launch({
@@ -151,7 +153,7 @@ export async function GET(request: Request) {
         
         // 페이지 로딩
         await page.goto(rankingUrl, { waitUntil: 'networkidle2', timeout: 30000 });
-        console.log('페이지 로딩 완료: ',rankingUrl);
+        //console.log('페이지 로딩 완료: ',rankingUrl);
         
         // 페이지가 로드되면 HTML 콘텐츠 가져오기
         const content = await page.content();
@@ -160,7 +162,6 @@ export async function GET(request: Request) {
 
         // 1. HTML Element 내에서 클래스명으로 찾기
         let rankingContainers = $(`${rankingContainersClass}`);
-        console.log('컨테이너 개수:', rankingContainers.length);      
         
         // 랭킹 컨테이너가 하나라도 있으면 첫 번째 것을 사용
         if (rankingContainers.length > 0) {
@@ -186,14 +187,14 @@ export async function GET(request: Request) {
               }
             }
 
-            const link = `https://www.musinsa.com/products/${itemId}`;
+            const link = `${musinsaLink}/products/${itemId}`;
             
             // 이미지 찾기
             const imageEl = $(el).find('img');
             let image = imageEl.attr('src') || imageEl.attr('data-src') || '';
             
             if (image && !image.startsWith('http')) {
-              image = image.startsWith('//') ? `https:${image}` : `https://www.musinsa.com${image}`;
+              image = image.startsWith('//') ? `https:${image}` : `${musinsaLink}${image}`;
             }
             
             // 이미지 alt 속성에서 브랜드명과 상품명 추출
