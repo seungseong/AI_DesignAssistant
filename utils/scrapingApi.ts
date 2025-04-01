@@ -91,7 +91,6 @@ async function crawlAbly(keyword: string): Promise<ShopItem[]> {
 // 통합 크롤링 함수
 export async function crawlShopItems(keyword: string, category: string = ''): Promise<{ 
   musinsa: ShopItem[], 
-  naver: ShopItem[], 
   ably: ShopItem[] 
 }> {
   try {
@@ -100,12 +99,10 @@ export async function crawlShopItems(keyword: string, category: string = ''): Pr
     // API 요청을 병렬로 처리하고 에러 처리 개선
     console.log(`[API 요청] 무신사: /api/musinsa?keyword=${encodeURIComponent(keyword)}&category=${category}`);
     console.log(`[API 요청] 에이블리: /api/ably?keyword=${encodeURIComponent(keyword)}&category=${category}`);
-    console.log(`[API 요청] 기타 쇼핑: /api/crawl?keyword=${encodeURIComponent(keyword)}&category=${category}`);
     
-    const [musinsaResponse, ablyResponse, otherShopsResponse] = await Promise.allSettled([
+    const [musinsaResponse, ablyResponse] = await Promise.allSettled([
       axios.get(`/api/musinsa?keyword=${encodeURIComponent(keyword)}&category=${category}`),
       axios.get(`/api/ably?keyword=${encodeURIComponent(keyword)}&category=${category}`),
-      axios.get(`/api/crawl?keyword=${encodeURIComponent(keyword)}&category=${category}`),
     ]);
     
     // 무신사 데이터 처리
@@ -139,24 +136,8 @@ export async function crawlShopItems(keyword: string, category: string = ''): Pr
       console.error('에이블리 데이터 가져오기 실패:', ablyResponse.reason);
     }
     
-    // 네이버 데이터 처리
-    let naverData: ShopItem[] = [];
-    if (otherShopsResponse.status === 'fulfilled') {
-      console.log('네이버 응답 성공');
-      naverData = otherShopsResponse.value.data.naver || [];
-      // 기존 응답에서 오는 에이블리 데이터는 무시하고 새 API에서 가져온 데이터 사용
-      if (!ablyData.length && otherShopsResponse.value.data.ably) {
-        ablyData = otherShopsResponse.value.data.ably;
-        console.log(`fallback: 기존 API에서 에이블리 상품 ${ablyData.length}개 로드됨`);
-      }
-      console.log(`네이버 상품 ${naverData.length}개 로드됨`);
-    } else {
-      console.error('네이버 데이터 가져오기 실패:', otherShopsResponse.reason);
-    }
-    
     const result = {
       musinsa: musinsaData,
-      naver: naverData,
       ably: ablyData
     };
     
@@ -167,7 +148,6 @@ export async function crawlShopItems(keyword: string, category: string = ''): Pr
     // 모든 쇼핑몰 데이터 요청이 실패해도 빈 배열 반환
     return {
       musinsa: [],
-      naver: [],
       ably: []
     };
   }

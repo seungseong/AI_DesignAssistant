@@ -137,12 +137,11 @@ export async function analyzeCharacter(character: string, snsLink?: string): Pro
 
 // 공통 프롬프트 포맷 함수 추가
 function formatProductPrompt(itemType: string, specificPrompt: string): string {
-  return `깨끗한 흰색 또는 연한 회색 배경에 인물에 어울리는 ${itemType}를 생성하세요. ${specificPrompt} 이것은 ${itemType === 'logo' ? '로고' : itemType}여야 하며, 다른 ${itemType === 'logo' ? '디자인' : '아이템'}이 아니어야 합니다. 사람 모델이나 마네킹을 포함하지 마세요.`;
+  return `깨끗한 흰색 또는 연한 회색 배경에 인물에 어울리는 ${itemType}를 생성하세요. ${specificPrompt} 이것은 ${itemType}여야 하며, 다른 아이템이 아니어야 합니다. 사람 모델이나 마네킹을 포함하지 마세요.`;
 }
 
 function getItemPrompt(itemType: string): string {
   const itemPrompts: { [key: string]: string } = {
-    'logo': '현대적이고 미니멀한 로고 디자인을 만드세요.',
     't-shirt': '티셔츠의 정면 뷰를 보여주세요, 디자인이 중앙에 위치하도록 평평하게 배치하세요.',
     'tshirt': '티셔츠의 정면 뷰를 보여주세요, 디자인이 중앙에 위치하도록 평평하게 배치하세요.',
     '티셔츠': '티셔츠의 정면 뷰를 보여주세요, 디자인이 중앙에 위치하도록 평평하게 배치하세요.',

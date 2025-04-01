@@ -5,8 +5,10 @@ import { analyzeCharacter, createImagePrompt, generateDalleImage, generateGemini
 import { crawlShopItems, type ShopItem } from '@/utils/scrapingApi'
 import Image from 'next/image'
 
-type ItemType = 'logo' | '의류>반팔티' | '의류>긴팔티' | '의류>팬츠' | '의류>맨투맨/스웨트셔츠' | '의류>후드/집업' | 
-                '의류>니트/스웨터' | '신발>스니커즈' | '주얼리>목걸이/펜던트' | '패션잡화>모자' | '패션잡화>가방' | 'custom'
+type ItemType = '상의>반소매 티셔츠' | '상의>긴소매 티셔츠' | '하의>팬츠' | '상의>맨투맨/스웨트셔츠' | '상의>후드 티셔츠' | 
+                '의류>니트/스웨터' | '신발>스니커즈' | '주얼리>목걸이/펜던트' | '패션잡화>모자' | '패션잡화>가방' | '의류>셔츠/블라우스' |
+                '의류>재킷/점퍼' | '의류>가디건' | '의류>슈트' | '의류>코트' | '의류>베스트' | '의류>패딩' | '의류>무스탕' | 
+                '의류>플리스/후리스' | '의류>원피스' | '의류>기타 및 기능성' | 'custom'
 
 // Define favorite item type
 interface FavoriteItem {
@@ -33,15 +35,13 @@ export default function Home() {
   const [dalleImageUrl, setDalleImageUrl] = useState('')
   const [geminiImageUrl, setGeminiImageUrl] = useState('')
   const [loading, setLoading] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<ItemType>('의류>반팔티')
+  const [selectedItem, setSelectedItem] = useState<ItemType>('상의>반소매 티셔츠')
   const [customItem, setCustomItem] = useState('')
   const [shopItems, setShopItems] = useState<{
     musinsa: ShopItem[],
-    naver: ShopItem[],
     ably: ShopItem[]
   }>({
     musinsa: [],
-    naver: [],
     ably: []
   });
   
@@ -112,7 +112,7 @@ export default function Home() {
   ];
 
   // 상태 추가
-  const [selectedCategory, setSelectedCategory] = useState<string>('의류>반팔티');
+  const [selectedCategory, setSelectedCategory] = useState<string>('상의>반소매 티셔츠');
   const [loadingStep, setLoadingStep] = useState<string>('');
 
   // 오류 메시지 상태 추가
@@ -130,7 +130,6 @@ export default function Home() {
     setSelectedCategory('상의>반소매 티셔츠')
     setShopItems({
       musinsa: [],
-      naver: [],
       ably: []
     })
     resetOpenAIClient()
@@ -220,8 +219,8 @@ export default function Home() {
     setAnalysis(favorite.analysis)
     setDalleImageUrl(favorite.dalleImageUrl)
     setGeminiImageUrl(favorite.geminiImageUrl)
-    const validItemTypes: ItemType[] = ['logo', '상의>반팔티', '상의>긴팔티', '하의>팬츠', '상의>맨투맨/스웨트셔츠', '상의>후드/집업', 
-                          '상의>니트/스웨터', '신발>스니커즈', '주얼리>목걸이/펜던트', '패션잡화>모자', '패션잡화>가방'];
+    const validItemTypes: ItemType[] = ['상의>반소매 티셔츠', '상의>긴소매 티셔츠', '하의>팬츠', '상의>맨투맨/스웨트셔츠', '상의>후드 티셔츠', 
+                          '의류>니트/스웨터', '신발>스니커즈', '주얼리>목걸이/펜던트', '패션잡화>모자', '패션잡화>가방'];
     
     if (validItemTypes.includes(favorite.itemType as ItemType)) {
       setSelectedItem(favorite.itemType as ItemType)
@@ -257,12 +256,11 @@ export default function Home() {
       // 분석 시작 시 이전 결과들 초기화
       setAnalysis('')
       setDalleImageUrl('')
-      setSelectedItem('의류>반팔티')
+      setSelectedItem('상의>반소매 티셔츠')
       setCustomItem('')
       setGeminiImageUrl('')
       setShopItems({
         musinsa: [],
-        naver: [],
         ably: []
       })
       
@@ -363,6 +361,16 @@ export default function Home() {
           
           // 플레이스홀더 이미지 URL 설정
           setGeminiImageUrl('https://placehold.co/1024x1024/f5f5f5/cccccc?text=Gemini+Image+Not+Available');
+        }
+        
+        // 이미지 생성 이후 쇼핑몰 상품 검색 실행
+        setLoadingStep('쇼핑몰 상품 검색 중...');
+        try {
+          const shopResults = await crawlShopItems(itemType, selectedCategory);
+          setShopItems(shopResults);
+        } catch (crawlError) {
+          console.error('Error fetching shop items:', crawlError);
+          setErrorMessage(prev => prev ? `${prev}\n상품 검색 중 오류가 발생했습니다.` : '상품 검색 중 오류가 발생했습니다.');
         }
       } catch (error: unknown) {
         console.error('General error:', error);
@@ -639,7 +647,6 @@ export default function Home() {
                     onChange={(e) => handleItemTypeChange(e.target.value)}
                     className="w-full p-2 border rounded text-black mb-2"
                   >
-                    <option value="logo">로고</option>
                     {CATEGORIES.map((category) => (
                       category.children && (
                         <optgroup key={category.label} label={category.label}>
@@ -897,7 +904,7 @@ export default function Home() {
                   </div>
                   
                   {/* 에이블리 */}
-                  <div className="mb-8">
+                  <div>
                     <h3 className="text-lg font-semibold mb-4 text-gray-700">에이블리</h3>
                     {shopItems.ably.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -912,45 +919,6 @@ export default function Home() {
                             <div className="aspect-square relative">
                               <img 
                                 src={item.image || 'https://image.msscdn.net/images/no_image_125.png'} 
-                                alt={item.title} 
-                                className="w-full h-full object-cover"
-                                onError={handleImageError}
-                                loading="lazy"
-                              />
-                            </div>
-                            <div className="p-3">
-                              {item.brand && (
-                                <p className="text-xs text-gray-500 mb-1">{item.brand}</p>
-                              )}
-                              <h4 className="font-medium text-sm mb-1 line-clamp-2 h-10">{item.title}</h4>
-                              <p className="text-sm font-bold text-gray-900">{item.price}</p>
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex justify-center items-center h-40 bg-gray-50 rounded-lg">
-                        <p className="text-gray-400">검색 결과가 없습니다</p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* 네이버 스마트 스토어 */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 text-gray-700">네이버 스마트 스토어</h3>
-                    {shopItems.naver.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {shopItems.naver.map(item => (
-                          <a 
-                            key={item.id} 
-                            href={item.url} 
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
-                          >
-                            <div className="aspect-square relative">
-                              <img 
-                                src={item.image || 'https://shop-phinf.pstatic.net/20230401_104/1680282818889K6Hnl_PNG/no_image_140.png'} 
                                 alt={item.title} 
                                 className="w-full h-full object-cover"
                                 onError={handleImageError}
