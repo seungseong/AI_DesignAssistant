@@ -111,7 +111,7 @@ export async function analyzeCharacter(character: string, snsLink?: string): Pro
     try {
       let prompt = character;
       if (snsLink) {
-        prompt = `${character || 'This person'} (SNS Link: ${snsLink})`;
+        prompt = `${character || '이 사람'} (SNS 링크: ${snsLink})`;
       }
   
       const completion = await withRetry(() => openai.chat.completions.create({
@@ -119,11 +119,11 @@ export async function analyzeCharacter(character: string, snsLink?: string): Pro
         messages: [        
           {
             role: "system",
-            content: "You are an expert who analyzes individuals and provides fashion item designs that match their personality based on the analysis. If an SNS link is provided, consider the person's social media presence and style in your analysis."
+            content: "당신은 개인을 분석하고 그 분석을 바탕으로 그들의 성격에 맞는 패션 아이템 디자인을 제공하는 전문가입니다. SNS 링크가 제공된 경우, 그 사람의 소셜 미디어 존재감과 스타일을 분석에 고려하세요."
           },
           {
             role: "user",
-            content: ` 'Analyze the following person and provide a design for a fashion item that fits their personality, omitting any description of the character. Include specific details about colors, patterns, and style elements that reflect their personality. Do not specify specific items. Do not include sensitive, political, sexually explicit, or violent content to avoid rejection by the safety system.: ${prompt}`
+            content: `다음 사람을 분석하고 그들의 성격에 맞는 패션 아이템 디자인을 제공해주세요. 캐릭터에 대한 설명은 생략하세요. 그들의 성격을 반영하는 색상, 패턴, 스타일 요소에 대한 구체적인 세부 정보를 포함해주세요. 특정 아이템을 명시하지 마세요. 안전 시스템에 의한 거부를 피하기 위해 민감한, 정치적인, 성적으로 노골적인, 또는 폭력적인 내용을 포함하지 마세요: ${prompt}`
           }
         ],
       }));
@@ -137,52 +137,55 @@ export async function analyzeCharacter(character: string, snsLink?: string): Pro
 
 // 공통 프롬프트 포맷 함수 추가
 function formatProductPrompt(itemType: string, specificPrompt: string): string {
-  return `Create a professional product image featuring only the ${itemType}, with a clean white or light gray background. ${specificPrompt} This must be ${itemType === 'logo' ? 'a' : 'the'} ${itemType}, not any other ${itemType === 'logo' ? 'design' : 'item'}. Do not include any human models or mannequins.`;
+  return `깨끗한 흰색 또는 연한 회색 배경에 인물에 어울리는 ${itemType}를 생성하세요. ${specificPrompt} 이것은 ${itemType === 'logo' ? '로고' : itemType}여야 하며, 다른 ${itemType === 'logo' ? '디자인' : '아이템'}이 아니어야 합니다. 사람 모델이나 마네킹을 포함하지 마세요.`;
 }
 
 function getItemPrompt(itemType: string): string {
   const itemPrompts: { [key: string]: string } = {
-    'logo': 'Create a modern and minimalist logo design.',
-    't-shirt': 'Show a single front view of the t-shirt, laid flat with the design centered.',
-    'tshirt': 'Show a single front view of the t-shirt, laid flat with the design centered.',
-    '티셔츠': 'Show a single front view of the t-shirt, laid flat with the design centered.',
-    'hoodie': 'Show a single front view of the hoodie, laid flat with the design centered.',
-    '후드티': 'Show a single front view of the hoodie, laid flat with the design centered.',
-    '후드': 'Show a single front view of the hoodie, laid flat with the design centered.',
-    'mug': 'Design with the pattern wrapped around. Show a coffee/tea mug.',
-    '머그컵': 'Design with the pattern wrapped around. Show a coffee/tea mug.',
-    '컵': 'Design with the pattern wrapped around. Show a coffee/tea mug.',
-    'soccer-shoes': 'Show the shoe from side view. Show soccer cleats/football boots.',
-    'soccer shoes': 'Show the shoe from side view. Show soccer cleats/football boots.',
-    '축구화': 'Show the shoe from side view. Show soccer cleats/football boots.',
-    'backpack': 'Design with a unique pattern. Show a backpack.',
-    '백팩': 'Design with a unique pattern. Show a backpack.',
-    '가방': 'Design with a unique pattern. Show a backpack.',
-    'cap': 'Design with a pattern on the front. Show a cap/hat.',
-    '모자': 'Design with a pattern on the front. Show a cap/hat.',
-    '캡': 'Design with a pattern on the front. Show a cap/hat.',
-    'shoes': 'Show the shoes from side view. Show casual shoes, not formal shoes or athletic footwear.',
-    '신발': 'Show the shoes from side view. Show casual shoes, not formal shoes or athletic footwear.',
+    'logo': '현대적이고 미니멀한 로고 디자인을 만드세요.',
+    't-shirt': '티셔츠의 정면 뷰를 보여주세요, 디자인이 중앙에 위치하도록 평평하게 배치하세요.',
+    'tshirt': '티셔츠의 정면 뷰를 보여주세요, 디자인이 중앙에 위치하도록 평평하게 배치하세요.',
+    '티셔츠': '티셔츠의 정면 뷰를 보여주세요, 디자인이 중앙에 위치하도록 평평하게 배치하세요.',
+    'hoodie': '후드티의 정면 뷰를 보여주세요, 디자인이 중앙에 위치하도록 평평하게 배치하세요.',
+    '후드티': '후드티의 정면 뷰를 보여주세요, 디자인이 중앙에 위치하도록 평평하게 배치하세요.',
+    '후드': '후드티의 정면 뷰를 보여주세요, 디자인이 중앙에 위치하도록 평평하게 배치하세요.',
+    'mug': '패턴이 머그컵 주변을 감싸도록 디자인하세요. 커피/차 머그컵을 보여주세요.',
+    '머그컵': '패턴이 머그컵 주변을 감싸도록 디자인하세요. 커피/차 머그컵을 보여주세요.',
+    '컵': '패턴이 머그컵 주변을 감싸도록 디자인하세요. 커피/차 머그컵을 보여주세요.',
+    'soccer-shoes': '측면에서 본 축구화를 보여주세요. 축구 클리트/축구 부츠를 보여주세요.',
+    'soccer shoes': '측면에서 본 축구화를 보여주세요. 축구 클리트/축구 부츠를 보여주세요.',
+    '축구화': '측면에서 본 축구화를 보여주세요. 축구 클리트/축구 부츠를 보여주세요.',
+    'backpack': '독특한 패턴으로 디자인하세요. 백팩을 보여주세요.',
+    '백팩': '독특한 패턴으로 디자인하세요. 백팩을 보여주세요.',
+    '가방': '독특한 패턴으로 디자인하세요. 백팩을 보여주세요.',
+    'cap': '앞면에 패턴이 있는 디자인을 만드세요. 캡/모자를 보여주세요.',
+    '모자': '앞면에 패턴이 있는 디자인을 만드세요. 캡/모자를 보여주세요.',
+    '캡': '앞면에 패턴이 있는 디자인을 만드세요. 캡/모자를 보여주세요.',
+    'shoes': '측면에서 본 신발을 보여주세요. 정장 구두나 운동화가 아닌 캐주얼 신발을 보여주세요.',
+    '신발': '측면에서 본 신발을 보여주세요. 정장 구두나 운동화가 아닌 캐주얼 신발을 보여주세요.',
   };
 
   const normalizedType = itemType.toLowerCase();
   const specificPrompt = itemPrompts[normalizedType];
-  
+  console.log('itemType:', itemType);
+  console.log('normalizedType:', normalizedType);
+  console.log('specificPrompt:', specificPrompt);
   if (specificPrompt) {
     return formatProductPrompt(normalizedType, specificPrompt);
   }
   
   // 기본 프롬프트
-  return formatProductPrompt(itemType, `Show a single front view of the item, laid flat with the design clearly visible.`);
+  return formatProductPrompt(itemType, `아이템의 정면 뷰를 보여주고, 디자인이 명확하게 보이도록 평평하게 배치하세요.`);
 }
 
 // 공통 프롬프트 생성 함수
 export function createImagePrompt(analysis: string, itemType: string): string {
   // 아이템 유형별 프롬프트 가져오기
   const itemPrompt = getItemPrompt(itemType);
+  console.log('itemPrompt:', itemPrompt);
   
   // 명확하고 안전한 프롬프트로 구성
-  return `${itemPrompt} inspired by these style elements: ${analysis}. Create a professional product photo with a clean white or light gray background. The design should be neat and commercially suitable. Do not include any human models, mannequins, or additional props.`;
+  return `${itemPrompt} 다음 스타일 요소에서 영감을 받았습니다: ${analysis}. 깨끗한 흰색 또는 연한 회색 배경의 전문적인 제품 사진을 만드세요. 디자인은 깔끔하고 상업적으로 적합해야 합니다. 사람 모델, 마네킹 또는 추가 소품을 포함하지 마세요.`;
 }
 
 // DALL-E 이미지 생성 함수

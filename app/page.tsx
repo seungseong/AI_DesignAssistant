@@ -5,7 +5,8 @@ import { analyzeCharacter, createImagePrompt, generateDalleImage, generateGemini
 import { crawlShopItems, type ShopItem } from '@/utils/scrapingApi'
 import Image from 'next/image'
 
-type ItemType = 'logo' | '상의>반소매 티셔츠' | '상의>후드 티셔츠' | '상의>맨투맨/스웨트셔츠' | '상의>니트/스웨터' | 'mug' | 'backpack' | 'cap' | 'shoes' | 'custom'
+type ItemType = 'logo' | '의류>반팔티' | '의류>긴팔티' | '의류>팬츠' | '의류>맨투맨/스웨트셔츠' | '의류>후드/집업' | 
+                '의류>니트/스웨터' | '신발>스니커즈' | '주얼리>목걸이/펜던트' | '패션잡화>모자' | '패션잡화>가방' | 'custom'
 
 // Define favorite item type
 interface FavoriteItem {
@@ -32,7 +33,7 @@ export default function Home() {
   const [dalleImageUrl, setDalleImageUrl] = useState('')
   const [geminiImageUrl, setGeminiImageUrl] = useState('')
   const [loading, setLoading] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<ItemType>('상의>반소매 티셔츠')
+  const [selectedItem, setSelectedItem] = useState<ItemType>('의류>반팔티')
   const [customItem, setCustomItem] = useState('')
   const [shopItems, setShopItems] = useState<{
     musinsa: ShopItem[],
@@ -53,47 +54,65 @@ export default function Home() {
   // 카테고리 관련 상태와 상수 추가
   const CATEGORIES: CategoryOption[] = [
     { 
-      label: '상의', 
+      label: '의류', 
       children: [
-        { value: '상의>반소매 티셔츠', label: '반소매 티셔츠' },
-        { value: '상의>후드 티셔츠', label: '후드 티셔츠' },
+        { value: '상의>반소매 티셔츠', label: '반팔티' },
+        { value: '상의>긴소매 티셔츠', label: '긴팔티' },
+        { value: '하의>팬츠', label: '팬츠' },
         { value: '상의>맨투맨/스웨트셔츠', label: '맨투맨/스웨트셔츠' },
-        { value: '상의>니트/스웨터', label: '니트/스웨터' }
-      ]
-    },
-    /*
-    { 
-      label: '아우터', 
-      children: [
-        { value: '아우터>전체', label: '아우터 전체' },
-        { value: '아우터>블루종/MA-1', label: '블루종/MA-1' },
-        { value: '아우터>레더 재킷', label: '레더 재킷' },
-        { value: '아우터>수트/블레이저', label: '수트/블레이저' }
-      ]
-    },
-    { 
-      label: '바지', 
-      children: [
-        { value: '바지>전체', label: '바지 전체' },
-        { value: '바지>데님 팬츠', label: '데님 팬츠' },
-        { value: '바지>코튼 팬츠', label: '코튼 팬츠' },
-        { value: '바지>트레이닝/조거 팬츠', label: '트레이닝/조거 팬츠' }
+        { value: '상의>후드 티셔츠', label: '후드/집업' },
+        { value: '의류>셔츠/블라우스', label: '셔츠/블라우스' },
+        { value: '의류>니트/스웨터', label: '니트/스웨터' },
+        { value: '의류>재킷/점퍼', label: '재킷/점퍼' },
+        { value: '의류>가디건', label: '가디건' },
+        { value: '의류>슈트', label: '슈트' },
+        { value: '의류>코트', label: '코트' },
+        { value: '의류>베스트', label: '베스트' },
+        { value: '의류>패딩', label: '패딩' },
+        { value: '의류>무스탕', label: '무스탕' },
+        { value: '의류>플리스/후리스', label: '플리스/후리스' },
+        { value: '의류>원피스', label: '원피스' },
+        { value: '의류>기타 및 기능성', label: '기타 및 기능성' }
       ]
     },
     { 
       label: '신발', 
       children: [
-        { value: '신발>전체', label: '신발 전체' },
         { value: '신발>스니커즈', label: '스니커즈' },
-        { value: '신발>구두/로퍼', label: '구두/로퍼' }
+        { value: '신발>부츠/워커', label: '부츠/워커' },
+        { value: '신발>구두', label: '구두' },
+        { value: '신발>샌들/슬리퍼', label: '샌들/슬리퍼' }
       ]
     },
-    { value: '전체', label: '전체' }
-     */
+    { 
+      label: '주얼리', 
+      children: [
+        { value: '주얼리>반지', label: '반지' },
+        { value: '주얼리>목걸이/펜던트', label: '목걸이/펜던트' },
+        { value: '주얼리>귀걸이', label: '귀걸이' },
+        { value: '주얼리>팔찌/발찌', label: '팔찌/발찌' },
+        { value: '주얼리>브로치/핀', label: '브로치/핀' },
+        { value: '주얼리>시계', label: '시계' }
+      ]
+    },
+    { 
+      label: '패션잡화', 
+      children: [
+        { value: '패션잡화>모자', label: '모자' },
+        { value: '패션잡화>가방', label: '가방' },
+        { value: '패션잡화>안경', label: '안경' },
+        { value: '패션잡화>스카프', label: '스카프' },
+        { value: '패션잡화>양말', label: '양말' },
+        { value: '패션잡화>목도리/머플러', label: '목도리/머플러' },
+        { value: '패션잡화>벨트', label: '벨트' },
+        { value: '패션잡화>지갑', label: '지갑' },
+        { value: '패션잡화>장갑', label: '장갑' }
+      ]
+    }
   ];
 
   // 상태 추가
-  const [selectedCategory, setSelectedCategory] = useState<string>('상의>반소매 티셔츠');
+  const [selectedCategory, setSelectedCategory] = useState<string>('의류>반팔티');
   const [loadingStep, setLoadingStep] = useState<string>('');
 
   // 오류 메시지 상태 추가
@@ -201,7 +220,10 @@ export default function Home() {
     setAnalysis(favorite.analysis)
     setDalleImageUrl(favorite.dalleImageUrl)
     setGeminiImageUrl(favorite.geminiImageUrl)
-    if (favorite.itemType === 'logo' || favorite.itemType === '상의>반소매 티셔츠' || favorite.itemType === '상의>후드 티셔츠' || favorite.itemType === '상의>맨투맨/스웨트셔츠' || favorite.itemType === '상의>니트/스웨터') {
+    const validItemTypes: ItemType[] = ['logo', '상의>반팔티', '상의>긴팔티', '하의>팬츠', '상의>맨투맨/스웨트셔츠', '상의>후드/집업', 
+                          '상의>니트/스웨터', '신발>스니커즈', '주얼리>목걸이/펜던트', '패션잡화>모자', '패션잡화>가방'];
+    
+    if (validItemTypes.includes(favorite.itemType as ItemType)) {
       setSelectedItem(favorite.itemType as ItemType)
       setCustomItem('')
     } else {
@@ -235,7 +257,7 @@ export default function Home() {
       // 분석 시작 시 이전 결과들 초기화
       setAnalysis('')
       setDalleImageUrl('')
-      setSelectedItem('상의>반소매 티셔츠')
+      setSelectedItem('의류>반팔티')
       setCustomItem('')
       setGeminiImageUrl('')
       setShopItems({
@@ -303,21 +325,6 @@ export default function Home() {
             setGeminiImageUrl(geminiResult);
           }
           
-          // 쇼핑몰 상품 검색 상태 메시지 업데이트
-          setLoadingStep('쇼핑몰 상품 검색 중...');
-          try {
-            const shopResults = await crawlShopItems(itemType, selectedCategory);
-            setShopItems(shopResults);
-          } catch (shopError) {
-            console.error('Shop crawling error:', shopError);
-            // 최소한의 빈 데이터 설정
-            setShopItems({
-              musinsa: [],
-              naver: [],
-              ably: []
-            });
-          }
-          
           // 히스토리에 추가 - 올바른 URL 사용
           const newHistoryItem: FavoriteItem = {
             id: Date.now().toString(),
@@ -371,20 +378,26 @@ export default function Home() {
   };
 
   // 카테고리 선택 처리 함수
-  const handleCategoryChange = async (category: string) => {
+  const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    
+  };
+
+  // 크롤링 처리 함수 추가
+  const handleCrawl = async () => {
     if (selectedItem && !loading) {
       const itemType = selectedItem === 'custom' ? customItem : selectedItem;
       
       setLoading(true);
+      setLoadingStep('쇼핑몰 상품 검색 중...');
       try {
-        const shopResults = await crawlShopItems(itemType, category);
+        const shopResults = await crawlShopItems(itemType, selectedCategory);
         setShopItems(shopResults);
       } catch (error) {
         console.error('Error fetching by category:', error);
+        setErrorMessage('상품 검색 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
+        setLoadingStep('');
       }
     }
   };
@@ -684,7 +697,14 @@ export default function Home() {
                   )
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">카테고리를 선택하면 해당 카테고리의 인기 상품을 보여줍니다.</p>
+              <button
+                onClick={handleCrawl}
+                disabled={loading || (!selectedItem) || (selectedItem === 'custom' && !customItem)}
+                className="w-full mt-2 px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:bg-gray-300"
+              >
+                상품 검색하기
+              </button>
+              <p className="text-xs text-gray-500 mt-1">버튼을 클릭하면 해당 카테고리의 인기 상품을 보여줍니다.</p>
             </div>
           </div>
 
