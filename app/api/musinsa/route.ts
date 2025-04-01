@@ -116,6 +116,9 @@ const CATEGORIES = [
   { value: '전체', label: '전체' }
 ];
 
+const rankingContainersClass = '.sc-f8z1b2-0.ldopFC';
+const productItemClass = '.sc-1t5ihy5-0.gAnWCV.gtm-view-item-list';
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const keyword = searchParams.get('keyword');
@@ -148,33 +151,42 @@ export async function GET(request: Request) {
         
         // 페이지 로딩
         await page.goto(rankingUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+        console.log('페이지 로딩 완료: ',rankingUrl);
         
         // 페이지가 로드되면 HTML 콘텐츠 가져오기
         const content = await page.content();
         const $ = cheerio.load(content);
         const items: ShopItem[] = [];
+
+        // 1. HTML Element 내에서 클래스명으로 찾기
+        let rankingContainers = $(`${rankingContainersClass}`);
+        console.log('컨테이너 개수:', rankingContainers.length);      
         
-        // 제공된 HTML 구조에 맞게 상품 추출
-        // 1. 랭킹 컨테이너 찾기 (.sc-1y072n9-0.jdzDMq)
-        const rankingContainers = $('.sc-1y072n9-0.jdzDMq');
-        
-        if (rankingContainers.length > 0) {          
-          // 첫 번째 컨테이너에서 상품 아이템 찾기 (1,2,3위 포함)
+        // 랭킹 컨테이너가 하나라도 있으면 첫 번째 것을 사용
+        if (rankingContainers.length > 0) {
+          // 첫 번째 컨테이너 선택
           const firstContainer = rankingContainers.first();
           
-          // 상품 아이템 찾기 (.sc-1m4cyao-0.dQNLfk)
-          const productItems = firstContainer.find('.sc-1m4cyao-0.dQNLfk').slice(0, 3);
-          
-          productItems.each((i, el) => {
+          // 상품 아이템 찾기
+          let productItems = firstContainer.find(`${productItemClass}`);
+          // 1위, 2위, 3위 상품만 추출 (최대 3개)
+          const topThreeItems: ShopItem[] = [];
+          productItems.slice(0, 3).each((i, el) => {
+            // 상위 3개 상품만 처리
+            //if (i >= 3) return false; // 3개 이후는 중단
+            
             const rank = i + 1; // 1, 2, 3위
             
-            // 상품 링크 요소 찾기 (div.sc-1m4cyao-1.dYjLwF > a)
-            const linkContainer = $(el).find('.sc-1m4cyao-1.dYjLwF');
-            const linkEl = linkContainer.find('a');
-            const link = linkEl.attr('href') || '';
-            
-            // 상품 ID 추출 (URL에서)
-            const itemId = link.split('/').pop() || '';
+            const itemIdEl = $(el).closest('[data-item-id]');
+            let itemId = '';
+            if (itemIdEl.length > 0) {
+              const itemData = itemIdEl.attr('data-item-id');
+              if (itemData) {
+                itemId = parseInt(itemData).toLocaleString();
+              }
+            }
+
+            const link = `https://www.musinsa.com/products/${itemId}`;
             
             // 이미지 찾기
             const imageEl = $(el).find('img');
@@ -236,8 +248,33 @@ export async function GET(request: Request) {
               brand: brand || '브랜드 정보 없음',
             };
             
-            items.push(item);
+            topThreeItems.push(item);
           });
+          
+          // 항상 3개의 아이템을 유지하기 위해 필요시 더미 데이터로 채움
+          if (topThreeItems.length === 0) {
+            const dummyItems = getDummyItems();
+            await browser.close();
+            return NextResponse.json(dummyItems);
+          } else if (topThreeItems.length < 3) {
+            // 추출된 항목이 3개 미만이면 부족한 만큼 더미로 채움
+            const dummyItems = getDummyItems();
+            while (topThreeItems.length < 3) {
+              const dummyIndex: number = topThreeItems.length;
+              if (dummyItems[dummyIndex]) {
+                topThreeItems.push({
+                  ...dummyItems[dummyIndex],
+                  id: `musinsa-dummy-${topThreeItems.length + 1}`,
+                  rank: topThreeItems.length + 1
+                });
+              } else {
+                break;
+              }
+            }
+          }
+          
+          await browser.close();
+          return NextResponse.json(topThreeItems);
         } else {
           // HTML 구조 디버깅을 위한 기본 요소들 출력
           const bodyHtml = $('body').html()?.substring(0, 500) || '';

@@ -52,6 +52,11 @@ const ABLY_CATEGORIES: AblyCategoryStructure = {
   }
 };
 
+const productContainersClass = '.sc-b3c10446-0.fLZaoW.sc-2efdd3c6-0.iGHAmn';
+const productImageClass = '.sc-ecca1885-3.fQtenw.sc-5b700d3e-0.jTuGWe';
+const productInfoClass = '.sc-2efdd3c6-2.ibTWTl';
+const productPriceClass = '.sc-cc3fb985-0.jcHbjU';
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const keyword = searchParams.get('keyword');
@@ -100,7 +105,7 @@ export async function GET(request: Request) {
         // 지원하지 않는 카테고리일 경우 기본 URL
         rankingUrl = `https://m.a-bly.com/ranking`;
       }
-      
+
       // Puppeteer를 사용하여 동적 페이지 로딩
       const browser = await puppeteer.launch({
         headless: true,
@@ -114,7 +119,7 @@ export async function GET(request: Request) {
         await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1');
         
         // 페이지 로딩
-        await page.goto(rankingUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+        await page.goto(rankingUrl, { waitUntil: 'networkidle2', timeout: 10000 });
         
         // 페이지가 로드되면 HTML 콘텐츠 가져오기
         const content = await page.content();
@@ -122,13 +127,13 @@ export async function GET(request: Request) {
         
         // 에이블리 HTML 구조에 맞게 상품 추출
         // 상품 컨테이너 찾기
-        const productContainers = $('.sc-b3c10446-0.fLZaoW.sc-2efdd3c6-0.iGHAmn');
+        const productContainers = $(`${productContainersClass}`);
         
         productContainers.slice(0, 3).each((i, el) => {
           const rank = i + 1;
 
           // 이미지 찾기 - 특정 클래스 내에서만 찾기
-          const mainImageEl = $(el).find('.sc-ecca1885-3.fQtenw.sc-5b700d3e-0.jTuGWe');
+          const mainImageEl = $(el).find(`${productImageClass}`);
           const imageEl = mainImageEl.find('img');
           let image = imageEl.attr('src') || imageEl.attr('data-src') || '';
 
@@ -142,10 +147,9 @@ export async function GET(request: Request) {
           if (!image) {
             image = 'https://image.a-bly.com/images/no_image.jpg';
           }
-
           
           // 브랜드명과 상품명이 있는 컨테이너 찾기
-          const infoContainer = $(el).find('.sc-2efdd3c6-2.ibTWTl');
+          const infoContainer = $(el).find(`${productInfoClass}`);
 
           // 브랜드명 찾기 (p 태그)
           const brandEl = $(infoContainer).closest('p').find('.typography.typography_subtitle4.typography_ellipsis.color_gгay60');
@@ -156,7 +160,7 @@ export async function GET(request: Request) {
           const title = titleEl.text().trim();
 
           // 가격 찾기
-          const priceEl = $(el).find('.sc-cc3fb985-0.jcHbjU');
+          const priceEl = $(el).find(`${productPriceClass}`);
           const price = priceEl.text().trim().replace(/^.*%/, '') + '원';
           
           // 링크 요소 찾기 (부모 요소가 링크일 수 있음)
@@ -191,7 +195,7 @@ export async function GET(request: Request) {
         throw error;
       }
     }
-    
+    /*
     // 키워드 검색
     if (keyword && items.length === 0) {
       const searchUrl = `https://m.a-bly.com/search?keyword=${encodeURIComponent(keyword)}`;
@@ -209,7 +213,7 @@ export async function GET(request: Request) {
         await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1');
         
         // 페이지 로딩
-        await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+        await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 10000 });
         
         // 페이지가 로드되면 HTML 콘텐츠 가져오기
         const content = await page.content();
@@ -280,7 +284,7 @@ export async function GET(request: Request) {
         throw error;
       }
     }
-    
+    */
     // 상품을 찾지 못했다면 더미 데이터 사용
     if (items.length === 0) {
       items = getDummyItems();
