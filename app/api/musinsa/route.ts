@@ -35,32 +35,43 @@ const MUSINSA_CATEGORIES: MusinsaCategories = {
     subcategories: {
       '전체': '001000',
       '반소매 티셔츠': '001001',
-      '긴소매 티셔츠': '001002',
-      '맨투맨/스웨트셔츠': '001003',
+      '셔츠/블라우스': '001002',
+      '피케/카라 티셔츠': '001003',
       '후드 티셔츠': '001004',
-      '니트/스웨터': '001005',
-      '기타 상의': '001006'
+      '맨투맨/스웨트셔츠': '001005',
+      '니트/스웨터': '001006',
+      '기타': '001008',
+      '긴소매 티셔츠': '001010',
+      '민소매 티셔츠': '001011'
     }
   },
   '아우터': {
     code: '002',
     subcategories: {
       '전체': '002000',
+      '재킷': '002000',
       '블루종/MA-1': '002001',
-      '레더 재킷': '002002',
-      '무스탕/퍼': '002003',
-      '트러커 재킷': '002004',
-      '수트/블레이저': '002005'
+      '레더/라이더스 재킷': '002002',
+      '슈트/블레이저 재킷': '002003',
+      '스타디움 재킷': '002004',
+      '나일론/코치 재킷': '002006',
+      '코트': '002008',
+      '패딩': '002012',
+      '가디건': '002020',
+      '베스트': '002021',
+      '플리스/후리스': '002023',
+      '무스탕': '002025'
     }
   },
   '바지': {
     code: '003',
     subcategories: {
       '전체': '003000',
-      '데님 팬츠': '003001',
-      '코튼 팬츠': '003002',
-      '슈트 팬츠/슬랙스': '003003',
-      '트레이닝/조거 팬츠': '003004'
+      '데님 팬츠': '003002',
+      '트레이닝/조거 팬츠': '003004',
+      '코튼 팬츠': '003007',
+      '슈트 팬츠/슬랙스': '003008',
+      '기타 하의': '003005'
     }
   },
   '신발': {
@@ -72,9 +83,16 @@ const MUSINSA_CATEGORIES: MusinsaCategories = {
       '샌들/슬리퍼': '005003',
       '기타 신발': '005004'
     }
+  },
+  '원피스': {
+    code: '100',
+    subcategories: {
+      '전체': '100000',
+      '원피스': '100001'
+    }
   }
 };
-
+/*
 const CATEGORIES = [
   { value: '000', label: '전체' },
   { 
@@ -82,9 +100,12 @@ const CATEGORIES = [
     children: [
       { value: '001000', label: '상의 전체' },
       { value: '001001', label: '반소매 티셔츠' },
+      { value: '001002', label: '셔츠/블라우스' },
       { value: '001004', label: '후드 티셔츠' },
-      { value: '001003', label: '맨투맨/스웨트셔츠' },
-      { value: '001005', label: '니트/스웨터' }
+      { value: '001005', label: '맨투맨/스웨트셔츠' },
+      { value: '001006', label: '니트/스웨터' },
+      { value: '001010', label: '긴소매 티셔츠' },
+      { value: '001011', label: '기타 상의' }
     ]
   },
   { 
@@ -115,6 +136,7 @@ const CATEGORIES = [
   },
   { value: '전체', label: '전체' }
 ];
+*/
 
 const rankingContainersClass = '.sc-f8z1b2-0.ldopFC';
 const productItemClass = '.sc-1t5ihy5-0.gAnWCV.gtm-view-item-list';
@@ -315,6 +337,7 @@ export async function GET(request: Request) {
     
     // 키워드 검색 (카테고리 검색에 실패했거나 키워드만 있는 경우)
     if (keyword) {
+      //https://www.musinsa.com/search/goods?keyword=%EB%82%A8%EC%9E%90+%EA%B0%80%EB%94%94%EA%B1%B4+%EC%98%A4%EB%B2%84%ED%95%8F&gf=A&sortCode=POPULAR
       const searchUrl = `https://www.musinsa.com/search/musinsa/goods?q=${encodeURIComponent(keyword)}&list_kind=small&sortCode=pop`;
       
       // Puppeteer로 검색 페이지 크롤링
@@ -440,7 +463,7 @@ function getCategoryCode(categoryStr: string): string {
       return mainCategoryInfo;
     }
   }
-  
+  /*
   // CATEGORIES 배열에서도 검색 (UI와 일치시키기 위해)
   for (const category of CATEGORIES) {
     if ('label' in category && category.label === mainCategory && 'children' in category) {
@@ -460,7 +483,7 @@ function getCategoryCode(categoryStr: string): string {
       return category.value as string;
     }
   }
-  
+  */
   // 카테고리를 찾지 못한 경우 기본값 반환
   console.log(`카테고리를 찾을 수 없음: ${categoryStr}, 기본값 반환`);
   return '000';

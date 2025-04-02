@@ -40,22 +40,47 @@ const ABLY_CATEGORIES: AblyCategoryStructure = {
     subcategories: {
       '전체': { category_sno: 8, sub_category_sno: 0 },
       '반소매 티셔츠': { category_sno: 8, sub_category_sno: 18 },
+      '민소매 티셔츠': { category_sno: 8, sub_category_sno: 21 },
+      '니트/스웨터': { category_sno: 8, sub_category_sno: 299 },
       '맨투맨/스웨트셔츠': { category_sno: 8, sub_category_sno: 300 },
+      '긴소매 티셔츠': { category_sno: 8, sub_category_sno: 498 },
+      '셔츠/블라우스': { category_sno: 8, sub_category_sno: 499 },
       '후드 티셔츠': { category_sno: 8, sub_category_sno: 500 }
+    }
+  },
+  '바지': {
+    category_sno: 174,
+    subcategories: {
+      '전체': { category_sno: 174, sub_category_sno: 0 }
     }
   },
   '아우터': {
     category_sno: 7,
     subcategories: {
-      '전체': { category_sno: 7, sub_category_sno: 0 }
+      '전체': { category_sno: 7, sub_category_sno: 0 },
+      '재킷': { category_sno: 7, sub_category_sno: 293 },
+      '가디건': { category_sno: 7, sub_category_sno: 16 },
+      '슈트': { category_sno: 7, sub_category_sno: 3 },
+      '코트': { category_sno: 7, sub_category_sno: 296 },
+      '베스트': { category_sno: 7, sub_category_sno: 297 },
+      '패딩': { category_sno: 7, sub_category_sno: 297 },
+      '무스탕': { category_sno: 7, sub_category_sno: 6 },
+      '플리스/후리스': { category_sno: 7, sub_category_sno: 577 }
     }
-  }
+  },
+  '원피스': {
+    category_sno: 10,
+    subcategories: {
+      '전체': { category_sno: 10, sub_category_sno: 0 }
+    }
+  },
 };
 
-const productContainersClass = '.sc-b3c10446-0.fLZaoW.sc-2efdd3c6-0.iGHAmn';
+const productItemClass = '.sc-b3c10446-0.fLZaoW.sc-2efdd3c6-0.iGHAmn';
 const productImageClass = '.sc-ecca1885-3.fQtenw.sc-5b700d3e-0.jTuGWe';
-const productInfoClass = '.sc-2efdd3c6-2.ibTWTl';
 const productPriceClass = '.sc-cc3fb985-0.jcHbjU';
+const productBrandClass = 'p.typography.typography__subtitle4.typography__ellipsis.color__gray60.sc-28d3dfe7-0.fMJBVC';
+const productTitleClass = 'p.typography.typography__body4.typography__ellipsis.color__gray60';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -102,10 +127,10 @@ export async function GET(request: Request) {
         const $ = cheerio.load(content);
         
         // 에이블리 HTML 구조에 맞게 상품 추출
-        // 상품 컨테이너 찾기
-        const productContainers = $(`${productContainersClass}`);
+        // 상품 찾기
+        const productItems = $(`${productItemClass}`);
         
-        productContainers.slice(0, 3).each((i, el) => {
+        productItems.slice(0, 3).each((i, el) => {
           const rank = i + 1;
 
           // 이미지 찾기 - 특정 클래스 내에서만 찾기
@@ -125,14 +150,14 @@ export async function GET(request: Request) {
           }
           
           // 브랜드명과 상품명이 있는 컨테이너 찾기
-          const infoContainer = $(el).find(`${productInfoClass}`);
+          //const infoContainer = $(el).find(`${productInfoClass}`);
 
           // 브랜드명 찾기 (p 태그)
-          const brandEl = $(infoContainer).closest('p').find('.typography.typography_subtitle4.typography_ellipsis.color_gгay60');
+          const brandEl = $(el).find(`${productBrandClass}`);
           const brand = brandEl.text().trim();
 
           // 상품명 찾기 (p 태그)
-          const titleEl = $(infoContainer).closest('p').find('.typography.typography_bodyd.typography_ellipsis.color_gray6o');
+          const titleEl = $(el).find(`${productTitleClass}`);
           const title = titleEl.text().trim();
 
           // 가격 찾기
@@ -171,6 +196,97 @@ export async function GET(request: Request) {
         throw error;
       }
     }
+
+    // 키워드 검색
+    if (keyword && items.length === 0) {
+      //https://m.a-bly.com/search?screen_name=SEARCH_RESULT&keyword=%EA%B8%B4%EC%86%8C%EB%A7%A4%ED%8B%B0%EC%85%94%EC%B8%A0&search_type=DIRECT
+      const searchUrl = `https://m.a-bly.com/search?keyword=${encodeURIComponent(keyword)}`;
+      
+      // Puppeteer로 검색 페이지 크롤링
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+      
+      try {
+        const page = await browser.newPage();
+        
+        // User-Agent 설정 (모바일)
+        await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1');
+        
+        // 페이지 로딩
+        await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 10000 });
+        
+        // 페이지가 로드되면 HTML 콘텐츠 가져오기
+        const content = await page.content();
+        const $ = cheerio.load(content);
+        
+        // 검색 결과에서 상품 항목 추출
+        const productItems = $('.sc-b3c10446-0.fLZaoW.sc-2efdd3c6-0.iGHAmn .sc-2efdd3c6-1.jNmUoh');
+        
+        productItems.slice(0, 3).each((i, el) => {
+          const rank = i + 1;
+          
+          // 이미지 찾기 - 특정 클래스 내에서만 찾기
+          const mainImageEl = $(el).find('.sc-ecca1885-3.fQtenw.sc-5b700d3e-0.jTuGWe');
+          const imageEl = mainImageEl.find('img');
+          let image = imageEl.attr('src') || imageEl.attr('data-src') || '';
+
+          // 이미지가 없으면 다른 이미지 요소 찾기 시도
+          if (!image) {
+            const altImageEl = $(el).find('img').first();
+            image = altImageEl.attr('src') || altImageEl.attr('data-src') || '';
+          }
+
+          // 이미지가 여전히 없으면 기본 이미지 사용
+          if (!image) {
+            image = 'https://image.a-bly.com/images/no_image.jpg';
+          }
+          
+          // 브랜드명과 상품명이 있는 컨테이너 찾기
+          const infoContainer = $(el).find('.sc-2efdd3c6-2.ibTWTl');
+
+          // 브랜드명 찾기 (p 태그)
+          const brandEl = infoContainer.find('p.typography.typography_subtitle4.typography_ellipsis.color_gгay60');
+          const brand = brandEl.text().trim();
+
+          // 상품명 찾기 (p 태그)
+          const titleEl = infoContainer.find('p.typography.typography_bodyd.typography_ellipsis.color_gray6o');
+          const title = titleEl.text().trim();
+
+          // 가격 찾기
+          const priceEl = $(el).find('.sc-cc3fb985-0.jcHbjU');
+          const price = (priceEl.text().trim().replace(/^.*%/, '') || '가격정보 없음') + '원';
+          
+          // 링크 요소 찾기 (부모 요소가 링크일 수 있음)
+          const linkEl = $(el).closest('a');
+          let link = linkEl.attr('href') || '';
+          if (link && !link.startsWith('http')) {
+            link = `https://m.a-bly.com${link}`;
+          }
+          
+          // 상품 정보 완성
+          const item: ShopItem = {
+            id: `ably-${i+1}`,
+            rank,
+            image: image || 'https://image.a-bly.com/images/no_image.jpg',
+            title: title || '에이블리 상품',
+            price: price,
+            url: link || 'https://m.a-bly.com',
+            brand: brand || '브랜드 정보 없음'
+          };
+          
+          items.push(item);
+        });
+        
+        await browser.close();
+      } catch (error) {
+        console.error('Puppeteer 검색 오류:', error);
+        await browser.close();
+        throw error;
+      }
+    }
+
     // 상품을 찾지 못했다면 더미 데이터 사용
     if (items.length === 0) {
       items = getDummyItems();
